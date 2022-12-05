@@ -14,14 +14,25 @@ import java.io.Reader
 import scala.util.parsing.combinator.RegexParsers
 
 case class CodePoint(p: Int)
+case class CodePointRange(start: CodePoint, end: CodePoint)
+case class MissingLine(cpRange: CodePointRange, field: String, rest: List[String])
 
 trait UCDParsers[A] extends RegexParsers {
   override val whiteSpace = """[ \t\x0B\f\r]""".r
-  def ucd: Parser[List[Any]] = rep(line)
-  def line: Parser[Any] = (fields ~! opt(comment) | comment) <~! opt("""\n+""".r)
-  def comment: Parser[Any] = missingLine | normalComment
-  def missingLine: Parser[Any] = "# @missing:" ~>! (codePointRange ~! sepString ~! rep(sepString)) ^^ {
-    case cp ~ f ~ rest => (cp, f, rest)
+
+  type Line = (Option[A], Option[MissingLine])
+
+  def ucd: Parser[List[Line]] = rep(line)
+  def line: Parser[Line] = ((fields ~! opt(comment) | comment) <~! opt("""\n+""".r)) ^^ {
+    case fs ~ c: (A ~ Option[MissingLine]) => (Some(fs), c)
+    case c: Option[MissingLine] => (None, c)
+  }
+  def comment: Parser[Option[MissingLine]] = (missingLine | normalComment) ^^ {
+    case m: MissingLine => Some(m)
+    case _ => None
+  }
+  def missingLine: Parser[MissingLine] = "# @missing:" ~>! (codePointRange ~! sepString ~! rep(sepString)) ^^ {
+    case cp ~ f ~ rest => MissingLine(cp, f, rest)
   }
   def normalComment: Parser[String] = """#.*""".r ^^ {
     _.toString
@@ -32,9 +43,9 @@ trait UCDParsers[A] extends RegexParsers {
   }
   def sepString: Parser[String] = ";" ~>! string
   def sepOptString: Parser[Option[String]] = ";" ~>! opt(string)
-  def codePointRange: Parser[(CodePoint, CodePoint)] = codePoint ~! opt(".." ~>! codePoint) ^^ {
-    case s~None => (s, s)
-    case s~Some(e) => (s, e)
+  def codePointRange: Parser[CodePointRange] = codePoint ~! opt(".." ~>! codePoint) ^^ {
+    case s~None => CodePointRange(s, s)
+    case s~Some(e) => CodePointRange(s, e)
   }
   def codePoint: Parser[CodePoint] = """\p{XDigit}+""".r ^^ {
     case s => CodePoint(Integer.parseInt(s, 16))
