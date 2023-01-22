@@ -66,11 +66,14 @@ type UnicodeDataRecord struct {
 	GeneralCategory string
 }
 
+type UnicodeDataDefaultRecord struct {
+}
+
 // UnicodeDataParser parses the UnicodeData.txt.
 type UnicodeDataParser struct {
 }
 
-func NewUnicodeDataParser() fileParser[*UnicodeDataRecord, *UnicodeDataRecord] {
+func NewUnicodeDataParser() fileParser[*UnicodeDataRecord, *UnicodeDataDefaultRecord] {
 	return &UnicodeDataParser{}
 }
 
@@ -82,6 +85,6 @@ func (p *UnicodeDataParser) parseFields(fields []field) *UnicodeDataRecord {
 	return rec
 }
 
-func (p *UnicodeDataParser) parseDefaultFields(fields []field) *UnicodeDataRecord {
+func (p *UnicodeDataParser) parseDefaultFields(fields []field) *UnicodeDataDefaultRecord {
 	return nil
 }

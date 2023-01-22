@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 
@@ -19,17 +20,21 @@ func main() {
 func gen() error {
 	var propValAliases *ucd.File[*ucd.PropertyValueAliasesRecord, *ucd.PropertyValueAliasesDefaultRecord]
 	{
+		log.Println("Get PropertyValueAliases.txt")
 		resp, err := http.Get("https://www.unicode.org/Public/13.0.0/ucd/PropertyValueAliases.txt")
 		if err != nil {
 			return err
 		}
 		defer resp.Body.Close()
+		log.Println("OK")
+		log.Println("Start parse")
 		propValAliases, err = ucd.Parse(resp.Body, ucd.NewPropertyValueAliasesParser())
 		if err != nil {
 			return err
 		}
+		log.Print("Finished")
 	}
-	// var unicodeData *ucd.File[*ucd.UnicodeDataRecord, *ucd.UnicodeDataRecord]
+	// var unicodeData *ucd.File[*ucd.UnicodeDataRecord, *ucd.UnicodeDataDefaultRecord]
 	// {
 	// 	resp, err := http.Get("https://www.unicode.org/Public/13.0.0/ucd/UnicodeData.txt")
 	// 	if err != nil {
