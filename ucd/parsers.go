@@ -119,3 +119,30 @@ func (p *ScriptsParser) parseDefaultFields(fields []field) *ScriptsDefaultRecord
 		Script:    fields[1].symbol(),
 	}
 }
+
+type PropListRecord struct {
+	CodePoint     CodePointRange
+	PropertyValue string
+}
+
+type PropListDefaultRecord struct {
+}
+
+// PropListParser parses the PropList.txt.
+type PropListParser struct {
+}
+
+func NewPropListParser() FileParser[*PropListRecord, *PropListDefaultRecord] {
+	return &PropListParser{}
+}
+
+func (p *PropListParser) parseFields(fields []field) *PropListRecord {
+	return &PropListRecord{
+		CodePoint:     fields[0].codePointRange(),
+		PropertyValue: fields[1].symbol(),
+	}
+}
+
+func (p *PropListParser) parseDefaultFields(fields []field) *PropListDefaultRecord {
+	return nil
+}

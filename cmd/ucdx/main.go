@@ -27,6 +27,10 @@ func run() error {
 	if err != nil {
 		return err
 	}
+	err = cache("PropList.txt", ucd.NewPropListParser())
+	if err != nil {
+		return err
+	}
 	err = cache("Scripts.txt", ucd.NewScriptsParser())
 	if err != nil {
 		return err
