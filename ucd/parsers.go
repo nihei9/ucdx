@@ -78,13 +78,44 @@ func NewUnicodeDataParser() FileParser[*UnicodeDataRecord, *UnicodeDataDefaultRe
 }
 
 func (p *UnicodeDataParser) parseFields(fields []field) *UnicodeDataRecord {
-	rec := &UnicodeDataRecord{
+	return &UnicodeDataRecord{
 		CodePoint:       fields[0].codePointRange(),
 		GeneralCategory: fields[2].symbol(),
 	}
-	return rec
 }
 
 func (p *UnicodeDataParser) parseDefaultFields(fields []field) *UnicodeDataDefaultRecord {
 	return nil
+}
+
+type ScriptsRecord struct {
+	CodePoint CodePointRange
+	Script    string
+}
+
+type ScriptsDefaultRecord struct {
+	CodePoint CodePointRange
+	Script    string
+}
+
+// ScriptsParser parses the Scripts.txt.
+type ScriptsParser struct {
+}
+
+func NewScriptsParser() FileParser[*ScriptsRecord, *ScriptsDefaultRecord] {
+	return &ScriptsParser{}
+}
+
+func (p *ScriptsParser) parseFields(fields []field) *ScriptsRecord {
+	return &ScriptsRecord{
+		CodePoint: fields[0].codePointRange(),
+		Script:    fields[1].symbol(),
+	}
+}
+
+func (p *ScriptsParser) parseDefaultFields(fields []field) *ScriptsDefaultRecord {
+	return &ScriptsDefaultRecord{
+		CodePoint: fields[0].codePointRange(),
+		Script:    fields[1].symbol(),
+	}
 }
