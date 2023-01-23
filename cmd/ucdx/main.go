@@ -8,6 +8,7 @@ import (
 
 	"github.com/adrg/xdg"
 	"github.com/nihei9/ucdx/ucd"
+	"golang.org/x/sync/errgroup"
 )
 
 func main() {
@@ -19,27 +20,24 @@ func main() {
 }
 
 func run() error {
-	err := cache("PropertyValueAliases.txt", ucd.NewPropertyValueAliasesParser())
-	if err != nil {
-		return err
-	}
-	err = cache("UnicodeData.txt", ucd.NewUnicodeDataParser())
-	if err != nil {
-		return err
-	}
-	err = cache("PropList.txt", ucd.NewPropListParser())
-	if err != nil {
-		return err
-	}
-	err = cache("Scripts.txt", ucd.NewScriptsParser())
-	if err != nil {
-		return err
-	}
-	return nil
+	g := &errgroup.Group{}
+	g.Go(func() error {
+		return cache("PropertyValueAliases.txt", ucd.NewPropertyValueAliasesParser())
+	})
+	g.Go(func() error {
+		return cache("UnicodeData.txt", ucd.NewUnicodeDataParser())
+	})
+	g.Go(func() error {
+		return cache("PropList.txt", ucd.NewPropListParser())
+	})
+	g.Go(func() error {
+		return cache("Scripts.txt", ucd.NewScriptsParser())
+	})
+	return g.Wait()
 }
 
 func cache[R any, D any](ucdFileName string, parser ucd.FileParser[R, D]) error {
-	resp, err := http.Get(fmt.Sprintf("https://www.unicode.org/Public/13.0.0/ucd/%v", ucdFileName))
+	resp, err := http.Get(ucd.NewUCDFileURL(ucdFileName))
 	if err != nil {
 		return err
 	}
